@@ -6,24 +6,24 @@
 ### Run project with developer mode
 
 ```npm
--pnpm run dev
+pnpm run dev
 ```
 
 ### Run project with start
 
 ```npm
--pnpm run start
+pnpm run start
 ```
 
 ### Build project
 
 ```npm
--pnpm run start
+pnpm run start
 ```
 
 ### Run dist files
 
 ```npm
--pnpm run start
+pnpm run start
 ```
 
