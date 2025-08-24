@@ -18,7 +18,7 @@ pnpm run start
 ### Build project
 
 ```npm
-pnpm run start
+pnpm run Build
 ```
 
 ### Run dist files
