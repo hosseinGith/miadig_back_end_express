@@ -17,7 +17,7 @@ export class Otp extends Base_sql {
     const [result] = await setConection(
       this.connection,
       `UPDATE  ${this.#columnName} 
-       SET otp_code = ?
+       SET otp_code = ? , time = current_timestamp
        WHERE gmail = BINARY ?
        `,
       [code, gmail]
@@ -35,8 +35,9 @@ export class Otp extends Base_sql {
     const [result] = await setConection(
       this.connection,
       `INSERT INTO ${this.#columnName} 
-               ( gmail, otp_code)
-              VALUES ( ? , ? ) `,
+      ( gmail, otp_code)
+      VALUES ( ? , ? ) 
+      `,
       [gmail, code]
     );
     return result.affectedRows > 0;
