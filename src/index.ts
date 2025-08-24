@@ -15,6 +15,6 @@ settings(app);
 // routes
 routes(app);
 
-const PORT = env_data.PORT;
+const PORT = env_data.PORT || 3000;
 
 app.listen(PORT);
