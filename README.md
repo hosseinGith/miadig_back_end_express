@@ -1,7 +1,14 @@
 # Hossein practice
+
 ## Miadig_back_end_express
 
 ## How to run
+
+### Instaling the packages
+
+```npm
+pnpm install
+```
 
 ### Run project with developer mode
 
@@ -26,4 +33,3 @@ pnpm run Build
 ```npm
 pnpm run start
 ```
-
