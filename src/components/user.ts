@@ -24,5 +24,7 @@ export class Users extends Base_sql {
     );
     return result;
   }
-  public add(sql: string, params: string[]) {}
+  public add(sql: string, params: string[]) {
+    
+  }
 }

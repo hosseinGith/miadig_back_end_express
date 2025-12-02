@@ -29,7 +29,6 @@ async function login(req: Request, res: Response, next: NextFunction) {
 
     // generate code with length from env
     const code = createRandOTP(Number(env_data.OTP_LENGTH) || 6);
-    console.log(code);
 
     // const sendMailResult = await sendMail(gmail, code, "text");
     const sendMailResult = true;

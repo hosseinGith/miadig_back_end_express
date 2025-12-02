@@ -71,8 +71,6 @@ export default function settings(app: Application) {
   app.use(express.json());
 
   app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    console.log(err);
-
     if (err)
       res.status(status_types.system).json({
         message: messages_response.system,

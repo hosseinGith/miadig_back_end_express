@@ -41,7 +41,6 @@ async function code(req: Request, res: Response, next: NextFunction) {
     timeDelta = timeDelta / 1000;
 
     const dateCheckReusult = timeDelta <= Number(env_data.OTP_TIME_EXPIRE);
-    console.log(timeDelta);
 
     if (Number(db_code) === Number(code) && dateCheckReusult) {
       // remove gmail after login
