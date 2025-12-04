@@ -1,30 +1,31 @@
 import crypto from "crypto";
 import { Base_sql } from ".";
-import { setConection } from "../utils";
+import { createHashkey, setConection } from "../utils";
 //
 export class Users extends Base_sql {
-  public async get(userDataRequested: string, username: string) {
-    const result = setConection(
+  public async get(username: string, userDataRequested: string) {
+    const [result] = await setConection(
       this.connection,
       `SELECT  ${userDataRequested} FROM  users WHERE username = BINARY ?`,
       [username]
     );
     return result;
   }
-  public set() {
-    const user_key = crypto.randomBytes(32).toString("hex");
-    const result = setConection(
+  public async set(username: string) {
+    const { token, secretKey } = createHashkey({ username });
+    const contains = await this.get(username, "username");
+    const result = await setConection(
       this.connection,
-      `INSERT INTO users 
-         ( user_key, username, password)
-        VALUES ( ? , ? , ?) 
-
-          WHERE id = BINARY ?`,
-      [user_key]
+      !contains[0]
+        ? `INSERT INTO users 
+         ( user_key, username)
+        VALUES ( ? , ? ) `
+        : `UPDATE users SET user_key =? , username =?
+         WHERE username =BINARY ? `,
+      [secretKey, username, contains[0] ? username : ""]
     );
-    return result;
+
+    return { token, result };
   }
-  public add(sql: string, params: string[]) {
-    
-  }
+  public add(sql: string, params: string[]) {}
 }

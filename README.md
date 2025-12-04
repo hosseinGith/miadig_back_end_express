@@ -33,3 +33,27 @@ pnpm run Build
 ```npm
 pnpm run start
 ```
+
+### description
+
+<!--  body      =>    {  keyName : type  }-->
+
+## Login
+
+localhost:3001/auth/login
+
+### type : post
+
+### body : { gmail : string}
+
+## ----------------------------------
+
+## Login Code
+
+localhost:3001/auth/login/code
+
+### type : post
+
+### body : { gmail: string; code: number }
+
+## ----------------------------------

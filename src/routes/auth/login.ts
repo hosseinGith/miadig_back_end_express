@@ -1,54 +1,63 @@
-import { NextFunction, Request, Response } from "express-serve-static-core";
+import fs from "fs";
+import { Request, Response } from "express-serve-static-core";
 import {
+  createHashkey,
   createRandOTP,
   encrypt,
   env_data,
   messages_response,
+  sendMail,
   status_types,
 } from "../../utils";
 import { Otp } from "../../components/otp";
+import path from "path";
+import { dirname } from "../..";
+import z from "zod";
 
-async function login(req: Request, res: Response, next: NextFunction) {
+async function login(req: Request, res: Response) {
   try {
-    const { gmail }: { gmail?: string | undefined } = req.body;
-
-    // checking gmail with switch
-    switch (true) {
-      // empty gmail
-      case !gmail:
-        return res.status(status_types.auth).json({
-          message: "gmail required.",
-        });
-
-      // gmail syntax check
-      case !gmail?.includes("@") && !gmail?.includes(".com"):
-        return res.status(status_types.auth).json({
-          message: "gmail incorrect.",
-        });
+    let htmlSend = fs
+      .readFileSync(path.join(dirname, "public", "gmailSend.html"))
+      .toString();
+    const { gmail }: { gmail: string } = req.body;
+    if (!z.email().safeParse(gmail).success || !gmail) {
+      return res.status(status_types.badReqeust).json({
+        messages: ["Invalid email address"],
+        keys: ["email"],
+      });
     }
 
     // generate code with length from env
     const code = createRandOTP(Number(env_data.OTP_LENGTH) || 6);
-
-    // const sendMailResult = await sendMail(gmail, code, "text");
-    const sendMailResult = true;
-
-    if (sendMailResult) {
+    // send code
+    const result = await sendMail(
+      gmail,
+      htmlSend.replace("{title}", "Login code is: ").replace("{value}", code),
+      process.env.WebSite
+    );
+    if (result) {
+      const { secretKey, token } = createHashkey(gmail);
       const otp = new Otp();
+      const result = await otp.set(gmail, encrypt(String(code)), secretKey);
 
-      const result = await otp.set(gmail, encrypt(String(code)));
-
-      if (result)
+      res.cookie("temporary", token, {
+        expires: new Date(Date.now() + 220 * 10000),
+        httpOnly: true,
+        sameSite: "lax",
+        secure: false,
+      });
+      if (result) {
         return res
           .status(status_types.ok)
-          .json({ tiem: env_data.OTP_TIME_EXPIRE });
+          .json({ time: env_data.OTP_TIME_EXPIRE });
+      }
     }
 
     res.status(status_types.system).json({
       message: messages_response.system,
     });
   } catch (error) {
-    next(error);
+    console.error(error);
   }
 }
 

@@ -25,7 +25,7 @@ export class Otp extends Base_sql {
     return result.affectedRows > 0;
   }
 
-  public async set(gmail: string, code: string) {
+  public async set(gmail: string, code: string, temporaryKey: string) {
     const checkGmail = await this.get(gmail);
 
     if (checkGmail.length > 0) {
@@ -35,10 +35,10 @@ export class Otp extends Base_sql {
     const [result] = await setConection(
       this.connection,
       `INSERT INTO ${this.#columnName} 
-      ( gmail, otp_code)
-      VALUES ( ? , ? ) 
+      ( gmail, otp_code,temporaryKey)
+      VALUES ( ? , ? ,?) 
       `,
-      [gmail, code]
+      [gmail, code, temporaryKey]
     );
     return result.affectedRows > 0;
   }

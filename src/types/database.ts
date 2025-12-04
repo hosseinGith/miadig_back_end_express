@@ -3,6 +3,7 @@ export interface Otp_codes {
   otp_code: string;
   time: string;
   id: number;
+  temporaryKey: string;
 }
 
 export const ProductKeys = [

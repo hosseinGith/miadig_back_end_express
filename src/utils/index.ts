@@ -3,8 +3,9 @@ import rateLimit from "express-rate-limit";
 import express, { Application, NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import cookieParser from "cookie-parser";
 import crypto, { randomBytes } from "crypto";
-
+import cors from "cors";
 interface UserPayload extends JwtPayload {
   id: string;
 }
@@ -41,7 +42,8 @@ export const mySqlData = {
 export const status_types = {
   ok: 200,
   created: 201,
-  auth: 403,
+  badReqeust: 400,
+  auth: 401,
   notFound: 404,
   system: 500,
 };
@@ -63,19 +65,18 @@ export default function settings(app: Application) {
   const limit = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
-    message:
-      "درخواست های زیاد <br> <br> <br> <br> لطفا چن دقیقه دیگر تلاش کنید.",
+    message: "Too many requests. Please try later",
   });
-
+  app.use(cookieParser("mySecretKey"));
   app.use(limit);
   app.use(express.json());
-
-  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    if (err)
-      res.status(status_types.system).json({
-        message: messages_response.system,
-      });
-  });
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      credentials: true,
+    })
+  );
 }
 
 export async function setConection(
@@ -90,27 +91,6 @@ export async function setConection(
   connection.destroy();
   return result;
 }
-export function authenticateToken(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (!token) {
-    return res.sendStatus(401);
-  }
-
-  jwt.verify(token, env_data.SECRET_KEY || "", (err, decoded) => {
-    if (err) {
-      return res.sendStatus(403);
-    }
-    req.user = decoded as UserPayload;
-
-    next();
-  });
-}
 
 export function createKey(payLoad: { username: string }) {
   if (!env_data.SECRET_KEY) return;
@@ -121,30 +101,30 @@ export function createKey(payLoad: { username: string }) {
 }
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  service: "gmail",
   auth: {
     user: env_data.EMAIL_USER,
-    pass: env_data.EMAIL_KEY,
+    pass: process.env.EMAIL_PASS, // App Password
   },
 });
 
 export async function sendMail(
   to: string,
-  text: string,
+  html: string,
   subject: string | undefined
 ) {
   const mailOptions = {
-    from: `info@miradig.ir`,
+    from: env_data.EMAIL_USER,
     to,
     subject,
-    text,
+    html,
   };
   try {
     await transporter.sendMail(mailOptions);
     return true;
   } catch (error) {
+    console.log(error);
+
     return false;
   }
 }
@@ -183,3 +163,13 @@ export function decrypt(encrypted: string, keys_: string[] = secret_keys) {
     return "";
   }
 }
+export const createHashkey = (payload: string | Buffer | object) => {
+  const secretKey = crypto.randomBytes(32).toString("hex");
+  const token = jwt.sign(payload, secretKey);
+  return { token, secretKey };
+};
+
+export const verifyToken = (token: string, secret: string) => {
+  const result = jwt.verify(token, secret);
+  return result;
+};
