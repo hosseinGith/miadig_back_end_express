@@ -99,30 +99,27 @@ export function createKey(payLoad: { username: string }) {
     expiresIn: "1h",
   });
 }
-
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "mail.mizbanfalocal.com",
+  port: 587, // اگر جواب نداد 587
+  secure: false, // برای 587 بذار false
   auth: {
-    user: env_data.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // App Password
+    user: process.env.EMAIL_USER, // مثل info@miradig.ir
+    pass: process.env.EMAIL_PASS, // پسورد ایمیل در cPanel
   },
 });
 
-export async function sendMail(
-  to: string,
-  html: string,
-  subject: string | undefined
-) {
-  const mailOptions = {
-    from: env_data.EMAIL_USER,
-    to,
-    subject,
-    html,
-  };
+export async function sendMail(to: string, html: string, subject?: string) {
   try {
-    await transporter.sendMail(mailOptions);
+    await transporter.sendMail({
+      from: `"Miradig" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
     return true;
-  } catch (error) {
+  } catch (err) {
+    console.error(err);
     return false;
   }
 }

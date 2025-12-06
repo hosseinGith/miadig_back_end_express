@@ -29,28 +29,28 @@ async function login(req: Request, res: Response) {
 
     // generate code with length from env
     const code = createRandOTP(Number(env_data.OTP_LENGTH) || 6);
-    // send code
-    const result = await sendMail(
-      gmail,
-      htmlSend.replace("{title}", "Login code is: ").replace("{value}", code),
-      process.env.WebSite
-    );
-    if (result) {
-      const { secretKey, token } = createHashkey(gmail);
-      const otp = new Otp();
-      const result = await otp.set(gmail, encrypt(String(code)), secretKey);
 
+    // send code
+
+    const { secretKey, token } = createHashkey(gmail);
+    const otp = new Otp();
+    const result = await otp.set(gmail, encrypt(String(code)), secretKey);
+
+    if (result) {
+      sendMail(
+        gmail,
+        htmlSend.replace("{title}", "Login code is: ").replace("{value}", code),
+        process.env.WebSite
+      );
       res.cookie("temporary", token, {
         expires: new Date(Date.now() + 220 * 10000),
         httpOnly: true,
         sameSite: "lax",
         secure: false,
       });
-      if (result) {
-        return res
-          .status(status_types.ok)
-          .json({ time: env_data.OTP_TIME_EXPIRE });
-      }
+      return res
+        .status(status_types.ok)
+        .json({ time: env_data.OTP_TIME_EXPIRE });
     }
 
     res.status(status_types.system).json({
