@@ -72,7 +72,7 @@ export default function settings(app: Application) {
   app.use(express.json());
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: process.env.APP_URL,
       methods: ["GET", "POST", "PUT", "DELETE"],
       credentials: true,
     })
@@ -123,8 +123,6 @@ export async function sendMail(
     await transporter.sendMail(mailOptions);
     return true;
   } catch (error) {
-    console.log(error);
-
     return false;
   }
 }

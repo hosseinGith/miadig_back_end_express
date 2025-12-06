@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "cross-env NODE_ENV=development nodemon --exec ts-node src/index.ts",
     "build": "tsc && copyfiles -u 1 src/public/**/* dist",
     "start": "ts-node src/index.ts",
     "dist": "node dist/index.js"
@@ -35,6 +35,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/minimatch": "^6.0.0",
     "@types/ms": "^2.1.0",
-    "copyfiles": "^2.4.1"
+    "copyfiles": "^2.4.1",
+    "cross-env": "^10.1.0"
   }
 }

@@ -15,9 +15,10 @@ const CodeSchema = z.object({
   code: z
     .number()
     .int()
-    .refine((val) => val >= 100000 && val <= 999999, {
-      message: "code invilde . most be of 6 numbers",
-    }),
+    .refine(
+      (val) => val >= 100000 && val <= 999999,
+      "code invilde . most be of 6 numbers"
+    ),
 });
 async function verifyCode(req: Request, res: Response) {
   try {
@@ -82,9 +83,6 @@ async function verifyCode(req: Request, res: Response) {
       );
       res.cookie("temporary", "", {
         expires: new Date(),
-        httpOnly: true,
-        sameSite: "lax",
-        secure: false,
       });
 
       return res.status(status_types.ok).json({
@@ -92,13 +90,11 @@ async function verifyCode(req: Request, res: Response) {
       });
     } else {
       return res.status(status_types.badReqeust).json({
-        message: ["Code incorrect. Please try again"],
+        messages: ["Code incorrect. Please try again"],
         keys: ["code"],
       });
     }
   } catch (error) {
-    console.log(error);
-
     return res.status(status_types.system).json({
       messages: ["System error"],
       keys: ["system"],
