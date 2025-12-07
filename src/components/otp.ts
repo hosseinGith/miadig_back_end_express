@@ -1,11 +1,11 @@
 import { Base_sql } from ".";
-import { Otp_codes } from "../types/database";
+import { Otp_codesType } from "../types/db/main";
 import { setConection } from "../utils";
 
 export class Otp extends Base_sql {
   #columnName: string = "otp_codes";
 
-  public async get(gmail: string): Promise<Otp_codes[]> {
+  public async get(gmail: string): Promise<Otp_codesType[]> {
     const [result] = await setConection(
       this.connection,
       `SELECT * FROM  ${this.#columnName} WHERE gmail = BINARY ?`,

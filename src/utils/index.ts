@@ -66,6 +66,7 @@ export default function settings(app: Application) {
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: "Too many requests. Please try later",
+    validate: { xForwardedForHeader: false },
   });
   app.use(cookieParser("mySecretKey"));
   app.use(limit);
@@ -82,7 +83,7 @@ export default function settings(app: Application) {
 export async function setConection(
   mySqlCon: (database: string | undefined) => Promise<Connection>,
   sql: string,
-  params: string[],
+  params: (string | number|boolean)[],
   database: string = mySqlData.database || ""
 ) {
   const connection = await mySqlCon(database);

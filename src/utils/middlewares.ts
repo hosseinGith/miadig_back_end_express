@@ -9,9 +9,9 @@ export async function authenticateToken(
   next: NextFunction
 ) {
   try {
-    const userKey = req.cookies.key;
+    const userKey = req.cookies;
 
-    if (!userKey || !userKey?.username || !userKey?.token) {
+    if (!userKey?.username || !userKey?.token) {
       return res.sendStatus(status_types.auth);
     }
     const { username, token } = userKey;

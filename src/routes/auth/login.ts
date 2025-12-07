@@ -31,6 +31,7 @@ async function login(req: Request, res: Response) {
     const code = createRandOTP(Number(env_data.OTP_LENGTH) || 6);
 
     // send code
+   
 
     const { secretKey, token } = createHashkey(gmail);
     const otp = new Otp();
@@ -45,8 +46,8 @@ async function login(req: Request, res: Response) {
       res.cookie("temporary", token, {
         expires: new Date(Date.now() + 220 * 10000),
         httpOnly: true,
-        sameSite: "lax",
-        secure: false,
+        sameSite: !process.env.SameSite ? "lax" : "none",
+        secure: !process.env.Secure,
       });
       return res
         .status(status_types.ok)

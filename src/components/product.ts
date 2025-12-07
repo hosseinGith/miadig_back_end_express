@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { Base_sql } from ".";
 import { mySqlData, setConection } from "../utils";
-import { ProductKeys, ProductKeys_arr } from "../types/database";
+import { ProductKeys, ProductKeys_arr } from "../types/db/products";
 //
 export class Product extends Base_sql {
   public async get(

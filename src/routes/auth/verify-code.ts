@@ -7,7 +7,7 @@ import {
   verifyToken,
 } from "../../utils";
 import { Otp } from "../../components/otp";
-import { z } from "zod";
+import { string, z } from "zod";
 import { Users } from "../../components/user";
 
 const CodeSchema = z.object({
@@ -26,6 +26,7 @@ async function verifyCode(req: Request, res: Response) {
     const verifyData = CodeSchema.safeParse(req.body);
 
     // check user gmail
+
     if (!verifyData.success) {
       const flattened = verifyData.error.flatten();
       const messages = Object.values(flattened.fieldErrors).flat();
@@ -35,9 +36,9 @@ async function verifyCode(req: Request, res: Response) {
     }
     // check user gmail
     const otp = new Otp();
-    const result = await otp.get(gmail);
-    const otp_data = result[0];
-    if (!result[0]) {
+    const [temporarySecret] = await otp.get(gmail);
+    const otp_data = temporarySecret;
+    if (!temporarySecret) {
       return res.status(status_types.badReqeust).json({
         messages: ["Invalid email address"],
         keys: ["email"],
@@ -50,14 +51,16 @@ async function verifyCode(req: Request, res: Response) {
     // convert ms => s
     timeDelta = timeDelta / 1000;
 
-    const dateCheckReusult = timeDelta <= Number(env_data.OTP_TIME_EXPIRE);
-
     const { temporary } = req.cookies;
 
     // delete user gmail and code
     // set user
-    const [temporarySecret] = await otp.get(gmail);
-    if (!temporary || typeof temporarySecret !== "object") return res;
+
+    if (!temporary || !temporarySecret?.gmail)
+      return res.status(status_types.badReqeust).json({
+        messages: ["Auth error"],
+        keys: ["auth"],
+      });
 
     await otp.remove(gmail);
     const users = new Users();
@@ -71,16 +74,18 @@ async function verifyCode(req: Request, res: Response) {
       if (result) sendMail(gmail, "Login successfully", process.env.WebSite);
       else throw Error("System error");
 
-      res.cookie(
-        "key",
-        { token, username: gmail },
-        {
-          expires: new Date(Date.now() + 1000 * 10 ** 3),
-          httpOnly: true,
-          sameSite: "lax",
-          secure: false,
-        }
-      );
+      res.cookie("username", gmail, {
+        expires: new Date(Date.now() + 1000 * 10 ** 3),
+        httpOnly: true,
+        sameSite: !process.env.SameSite ? "lax" : "none",
+        secure: !process.env.Secure,
+      });
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 1000 * 10 ** 3),
+        httpOnly: true,
+        sameSite: !process.env.SameSite ? "lax" : "none",
+        secure: !process.env.Secure,
+      });
       res.cookie("temporary", "", {
         expires: new Date(),
       });
